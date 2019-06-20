@@ -60,7 +60,7 @@ function lerArquivo(arquivo, tipo = 0){
 }
 
 function ExportarPlanilha () {
-    var hoje = new Date(2017,12,19);
+    var hoje = new Date();
     var wb =  XLSX.utils.book_new();
     wb.Props = {
         Title:"titulo",
@@ -82,7 +82,7 @@ function ExportarPlanilha () {
         return buf
     }
 
-    saveAs(new Blob([s2ab(exportExcel)], {type: "application/octet-stream"}), "PlanilhaMesclada_"+hoje.getDate()+"_"+hoje.getMonth()+1+"_"+hoje.getFullYear()+".xlsx");
+    saveAs(new Blob([s2ab(exportExcel)], {type: "application/octet-stream"}), "PlanilhaMesclada_"+hoje.getDate()+"_"+(hoje.getMonth()+1)+"_"+hoje.getFullYear()+".xlsx");
 }
 
 function incluiValorCampo(folha, modelo, coluna, pos, campo){
