@@ -1,4 +1,4 @@
-var tabela = [], aux = [], aux2 = []
+var tabela = [], aux = [], manse = 0, sohee = 0
 
 function lerArquivo(arquivo, tipo = 0){
     if ((arquivo[0].name).includes('.xlsx')) {
@@ -13,8 +13,12 @@ function lerArquivo(arquivo, tipo = 0){
             
             if(tipo == 0){
                 aux = pegarPlanilhaManse(workbook)
+                manse++
+                document.querySelector('.totalManse').innerHTML = manse
             }else{
                 aux = pegarPlanilhaSohee(workbook)
+                sohee++
+                document.querySelector('.totalSohee').innerHTML = sohee
             }
 
             aux.sort(function compare(a, b) {
@@ -136,8 +140,9 @@ function formatarSoma(a, b){
 function removeRegistrosDuplos(){
     var novoRegistro=[], novoElemento = {}
     for (let i = 0; i < aux.length; i++) {
-        if(novoElemento==''){
+        if(novoElemento.id==undefined){
             novoElemento = aux[i]
+            console.log(novoElemento)
         }
         if(i+2 <= aux.length)
         {
