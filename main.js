@@ -1,4 +1,4 @@
-var tabela = [], aux = [], manse = 0, sohee = 0
+var tabela = [], aux = [], manse = 0, sohee = 0, empresa = false
 
 function lerArquivo(arquivo, tipo = 0){
     if ((arquivo[0].name).includes('.xlsx')) {
@@ -27,10 +27,16 @@ function lerArquivo(arquivo, tipo = 0){
                 return 0;
             })
 
+            removeRegistrosTecidos()
+
             removeRegistrosDuplos()
 
             somaDadosExistentes()
 
+            totalPorFabrica()
+
+            removeRegistrosZerados()
+        
             insereDadosNovos()
 
             tabela.sort(function compare(a, b) {
@@ -99,13 +105,14 @@ function pegarPlanilhaManse(wb){
         pos = 2,
         modelo = {},
         tabela = []
+        empresa = folha['A'+2].w
 
     while(folha['A'+pos] != undefined){
         modelo = {}
-        modelo.id  = folha['A'+pos].w.replace('-','').slice(0,5)
-
-        incluiValorCampo(folha, modelo, 'B', pos, "Descricao")
-        incluiValorCampo(folha, modelo, 'F', pos, "Total")
+        modelo.id  = folha['B'+pos].w.replace('-','').slice(0,5)
+        incluiValorCampo(folha, modelo, 'C', pos, "Item")
+        incluiValorCampo(folha, modelo, 'D', pos, "Descricao")
+        incluiValorCampo(folha, modelo, 'K', pos, "Total")
 
         tabela = [...tabela, modelo]
         pos++
@@ -119,6 +126,7 @@ function pegarPlanilhaSohee(wb){
         pos = 2,
         modelo = {},
         tabela = []
+        empresa = false
 
     while(folha['A'+pos] != undefined){
         modelo = {}
@@ -142,7 +150,6 @@ function removeRegistrosDuplos(){
     for (let i = 0; i < aux.length; i++) {
         if(novoElemento.id==undefined){
             novoElemento = aux[i]
-            console.log(novoElemento)
         }
         if(i+2 <= aux.length)
         {
@@ -157,6 +164,27 @@ function removeRegistrosDuplos(){
     aux = novoRegistro
 }
 
+function removeRegistrosTecidos(){
+    aux = aux.filter(function(element){
+        let item = element.Item
+        delete element.Item
+        return item != 'TECIDO' &&
+        item != 'DIVERSOS' &&
+        item != 'ENTRETELA' &&
+        item != 'SALDO' &&
+        item != 'AVIAMENTO' &&
+        item != 'TICIDO' &&
+        item != 'TECIODO' &&
+        item != ''
+    })
+}
+
+function removeRegistrosZerados(){
+    aux = aux.filter(function(element){
+        return element.Total != 0
+    })
+}
+
 function somaDadosExistentes(){
     for (let j = 0; j < tabela.length; j++) {
         for (let i = 0; i < aux.length; i++) {
@@ -167,12 +195,28 @@ function somaDadosExistentes(){
     }
 }
 
+function totalPorFabrica(){
+    if(empresa){
+        empresa == 'SHOW MEAIMORES' ? empresa = 'Bom Retiro' : empresa = 'Bras'
+        var total = []
+        aux.map((element)=>{
+            console.log(element)
+            let modelo = element
+            modelo[empresa] = element.Total
+            console.log(modelo)
+            total = {...total, modelo}
+        })
+    }
+}
+
 function insereDadosNovos() {
     for (let i = 0; i < aux.length; i++) {
         var encontrou = false
         for (let j = 0; j < tabela.length; j++) {
             if(aux[i].id == tabela[j].id){
                 encontrou = true
+                aux[i]['Bom Retiro'] != undefined ? tabela[j]['Bom Retiro'] = aux[i]['Bom Retiro'] : ''
+                aux[i]['Bras'] != undefined ? tabela[j]['Bras'] = aux[i]['Bras'] : ''
             }
         }
         if(encontrou == false){
