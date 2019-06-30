@@ -13,6 +13,7 @@ function lerArquivo(arquivo, tipo = 0){
             
             if(tipo == 0){
                 aux = pegarPlanilhaManse(workbook)
+                formatarTabelaEntrada(workbook)
                 manse++
                 document.querySelector('.totalManse').innerHTML = manse
             }else{
@@ -116,7 +117,7 @@ function pegarPlanilhaManse(wb){
 
         tabela = [...tabela, modelo]
         pos++
-    }
+    }    
     return tabela;
 }
 
@@ -200,10 +201,8 @@ function totalPorFabrica(){
         empresa == 'SHOW MEAIMORES' ? empresa = 'Bom Retiro' : empresa = 'Bras'
         var total = []
         aux.map((element)=>{
-            console.log(element)
             let modelo = element
             modelo[empresa] = element.Total
-            console.log(modelo)
             total = {...total, modelo}
         })
     }
@@ -223,4 +222,59 @@ function insereDadosNovos() {
             tabela = [...tabela, aux[i]]
         }
     }
+}
+
+function formatarTabelaEntrada(wb){
+    let folha = wb.Sheets[wb.SheetNames[0]],
+        pos = 2,
+        modelo = {},
+        planilha = []
+        local = false
+
+    while(folha['B'+pos] != undefined){
+        modelo = {}
+        local  = folha['A'+2].w
+        local == 'SHOW MEAIMORES' ? local = 'Bom Retiro' : local = 'Bras'
+        modelo.id  = folha['B'+pos].w.replace('-','').slice(0,5)
+
+        incluiValorCampo(folha, modelo, 'D', pos, "Descricao")
+        incluiValorCampo(folha, modelo, 'F', pos, "Validade")
+        incluiValorCampo(folha, modelo, 'I', pos, "Mov(e/s)")
+        incluiValorCampo(folha, modelo, 'J', pos, "Vd-dev")
+        incluiValorCampo(folha, modelo, 'K', pos, "Total")
+        incluiValorCampo(folha, modelo, 'L', pos, "Preco")
+        incluiValorCampo(folha, modelo, 'N', pos, "Valor Total")
+
+        planilha = [...planilha, modelo]
+        pos++
+    }
+    imprimirTabelaFormatada(planilha, local)
+}
+
+function imprimirTabelaFormatada(planilha, local) {
+
+    var hoje = new Date();
+    var wb =  XLSX.utils.book_new();
+    wb.Props = {
+        Title:"titulo",
+        Subject:"assunto",
+        Author:"autor",
+        CreatedDate: hoje
+    };
+    wb.SheetNames.push("test sheet");
+    var ws = XLSX.utils.json_to_sheet(planilha);
+    wb.Sheets["test sheet"] = ws
+    let exportExcel = XLSX.write(wb, {bookType:'xlsx', type:'binary'});
+
+    function s2ab(s){
+        let buf = new ArrayBuffer(s.length);
+        let view = new Uint8Array(buf);
+        for (let i = 0; i < s.length; i++) {
+            view[i] = s.charCodeAt(i) & 0xFF;
+        }
+        return buf
+    }
+
+    saveAs(new Blob([s2ab(exportExcel)], {type: "application/octet-stream"}), "Planilha"+local+"_"+hoje.getDate()+"_"+(hoje.getMonth()+1)+"_"+hoje.getFullYear()+".xlsx");
+
 }
